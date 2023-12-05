@@ -17,20 +17,9 @@ for i, b in enumerate(blocks):
     for l in mappings:
         dest, src, length = l.split()
         maps[i].append((int(dest), int(src), int(length)))
-        
 
-for m in maps:
-    bounds = []
-    for _, lb, length in m:
-        bounds.append(lb)
-        bounds.append(lb+length-1)
-        
-    bounds = list(sorted(bounds))
-    for i in range(2, len(bounds), 2):
-        if bounds[i] - bounds[i-1] != 1:
-            print(bounds[i], bounds[i-1], bounds[i] - bounds[i-1])
-        
-        
+    maps[i].sort(key=lambda x: x[1])
+    
 def mapper(src, map):
     dest = src
     
@@ -45,38 +34,29 @@ def mapSeed(src):
     dest = src
     for i, m in enumerate(maps):
         dest = mapper(dest, m)
-        print(i, dest)
     return dest
 
-def reverseMapper(dest, map):
-    src = dest
-    for i, (rdest, rsrc, length) in enumerate(map):
-        if rdest <= dest < rdest + length:
-            print('Rule ', i)
-            return rsrc + (dest - rdest)
-
     
-    print('No rule found')
-    return src
-
-def reverseMapSeed(dest):
-    src = dest
-    for m in reversed(maps):
-        src = reverseMapper(src, m)
-    return src
-
-
-    
-# lowest = 10e9
-# for s in seeds:
-#     s = mapSeed(s)
-#     if s < lowest:
-#         lowest = s
+lowest = 10e9
+for s in seeds:
+    s = mapSeed(s)
+    if s < lowest:
+        lowest = s
+        
+print(lowest)
 
 seedRanges = []
 for i in range(0, len(seeds), 2):
     start, length = seeds[i], seeds[i+1]
     seedRanges.append((start, length))
+
+# Assumption: mappings are sorted
+def findNextHigherMapping(index, mappings):
+    for (dest, src, length) in mappings:
+        if src > index:
+            return (dest, src, length)
+    return None
+        
 
 def findMapping(index, mappings):
     for rdest, rsrc, length in mappings:
@@ -90,34 +70,33 @@ def mapRange(range, mappings):
     
     results = []
     
-    lowestSrc = min(src for (_, src, _) in mappings)
-    highestSrc = max(src+length for (_, src, length) in mappings)
-    
-    while rangeLen > 0:
-        if start < lowestSrc:
-            coveredRange = min(lowestSrc-start, rangeLen)
-
-            results.append((start, coveredRange))
-            start += coveredRange
-            rangeLen -= coveredRange
-            continue
-        
-        if start >= highestSrc:
-
-            coveredRange = rangeLen
-
-            results.append((start, coveredRange))
-            start += coveredRange
-            rangeLen -= coveredRange
-            continue
-        
+    while rangeLen > 0:        
         # Approach: find a mapping, then see how much of the range
         # we can cover with it, then find the next range
         curMapping = findMapping(start, mappings)
         
+        # Handle all edge cases where we don't actually find a mapping
+        # Also handles cases where the gap is in the middle 
         if curMapping == None:
-            print('No mapping found for start = ', start)
-            break
+            nextHigher = findNextHigherMapping(start, mappings)
+            # If there is no higher mapping, we can just cover the rest of the range 
+            if nextHigher == None:
+                coveredRange = rangeLen
+
+                results.append((start, coveredRange))
+                start += coveredRange
+                rangeLen -= coveredRange
+                continue
+            else:
+                (_, nsrc, _) = nextHigher
+
+                # We can at most cover the gap between start and the start of the next higher interval
+                coveredRange = min(nsrc-start, rangeLen)
+
+                results.append((start, coveredRange))
+                start += coveredRange
+                rangeLen -= coveredRange
+                continue
         
         dest, src, length = curMapping
         
@@ -141,7 +120,5 @@ for i, m in enumerate(maps):
     
         
 print(min(dest for (dest, _) in ranges))    
-
-
     
 
