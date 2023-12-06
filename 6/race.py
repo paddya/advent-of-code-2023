@@ -13,7 +13,6 @@ distances = list(map(int, srcDistances))
 # 0 = -t1^2 + t1*t - d
 # t1,2 = (-t +- sqrt(t^2 - 4*(-1)*(-d))/(-2))
 def simulateRace(t, d):
-    domain = t**2 - 4*(-1)*(-d)
     t1 = math.ceil((-t + math.sqrt(t**2 - 4*d))/(-2))
     t2 = math.floor((-t - math.sqrt(t**2 - 4*d))/(-2))
     
