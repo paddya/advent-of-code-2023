@@ -2,8 +2,8 @@ import sys
 import re
 from collections import defaultdict
 import math
-instructions, graph = [b for b in open(sys.argv[1]).read().split('\n\n')]
 
+instructions, graph = [b for b in open(sys.argv[1]).read().split('\n\n')]
 G = {}
 
 for node in graph.split('\n'):
@@ -11,13 +11,9 @@ for node in graph.split('\n'):
     G[node] = (left, right)
 
 currentNodes = [n for n in G.keys() if n.endswith('A')]
-#print(currentNodes)
 steps = 0
 
 current = currentNodes[0]
-
-visited = set()
-endIndex = defaultdict(list)
 
 numSteps = {}
 
